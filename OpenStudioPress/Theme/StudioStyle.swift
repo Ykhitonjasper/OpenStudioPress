@@ -1,17 +1,19 @@
 import SwiftUI
 
 /// Studio-only chrome kept out of the generic AppTheme template.
+/// Chromatic values live in the asset catalog — no literal RGB here.
 extension AppTheme {
     /// Printed-page surface on the dark board chrome.
     static let paper = Color("Paper")
     static let paperInk = Color("PaperInk")
+    static let foil = Color("Foil")
+    static let roseDeep = Color("RoseDeep")
+    static let accentSoft = Color("AccentSoft")
+    static let panelFillHigh = Color("PanelFillHigh")
+    static let panelFillLow = Color("PanelFillLow")
 
     static let cornerRadius: CGFloat = 26
     static let panelPadding: CGFloat = 20
-
-    /// Soft champagne foil used for luxury rims.
-    static let foil = Color(red: 0.93, green: 0.82, blue: 0.72)
-    static let roseDeep = Color(red: 0.55, green: 0.14, blue: 0.32)
 
     static var displayFont: Font {
         .system(size: 34, weight: .semibold, design: .serif)
@@ -27,11 +29,7 @@ extension AppTheme {
 
     static var accentSheen: LinearGradient {
         LinearGradient(
-            colors: [
-                Color(red: 1.00, green: 0.72, blue: 0.84),
-                Color(red: 0.95, green: 0.36, blue: 0.60),
-                Color(red: 0.72, green: 0.18, blue: 0.44)
-            ],
+            colors: [accentSoft, accent, roseDeep],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -39,11 +37,7 @@ extension AppTheme {
 
     static var foilSheen: LinearGradient {
         LinearGradient(
-            colors: [
-                foil.opacity(0.95),
-                Color(red: 0.98, green: 0.70, blue: 0.78),
-                foil.opacity(0.55)
-            ],
+            colors: [foil.opacity(0.95), accentSoft.opacity(0.85), foil.opacity(0.55)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -51,10 +45,7 @@ extension AppTheme {
 
     static var panelFill: LinearGradient {
         LinearGradient(
-            colors: [
-                Color(red: 0.20, green: 0.12, blue: 0.19).opacity(0.94),
-                Color(red: 0.10, green: 0.06, blue: 0.11).opacity(0.98)
-            ],
+            colors: [panelFillHigh.opacity(0.94), panelFillLow.opacity(0.98)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
