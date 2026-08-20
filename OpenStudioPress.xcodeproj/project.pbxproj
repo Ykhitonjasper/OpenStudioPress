@@ -18,6 +18,7 @@
 		5DA43E059DADF6CA98686B71 /* ArtifactDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EFC431214A68D3DF09A8E24 /* ArtifactDetailScreen.swift */; };
 		64607560E15D57C0EEC749CA /* OnboardingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F704D9C84D0D16C83847B3C7 /* OnboardingScreen.swift */; };
 		6C9C9CA7EF42B415F42D76A6 /* StopArrangerScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686486A84A2A2558A972FFCB /* StopArrangerScreen.swift */; };
+		71B71289A858EC2F7C9110A0 /* StudioStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B42B321129CB6F16BC0DA39 /* StudioStyle.swift */; };
 		791010BDE6B2C5C8436020C7 /* DuplicateSetupScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDDFDCD93966C3CE6A648AA0 /* DuplicateSetupScreen.swift */; };
 		8157767B724E6B3E47CE2622 /* TemplateDetailScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E364A6ACBA7D3DB4A40773B /* TemplateDetailScreen.swift */; };
 		85B208DA38D88B3EAD3BFDED /* State.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B87AF98A4502A6BFA34243 /* State.swift */; };
@@ -59,6 +60,7 @@
 		4ABB9C174733FF03129DFC2B /* DomainModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DomainModels.swift; sourceTree = "<group>"; };
 		54FDCF7DBEF8300A1FA5D712 /* LibraryGridScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryGridScreen.swift; sourceTree = "<group>"; };
 		57238065F36B77B5729C3287 /* App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = App.swift; sourceTree = "<group>"; };
+		5B42B321129CB6F16BC0DA39 /* StudioStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StudioStyle.swift; sourceTree = "<group>"; };
 		686486A84A2A2558A972FFCB /* StopArrangerScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopArrangerScreen.swift; sourceTree = "<group>"; };
 		6E364A6ACBA7D3DB4A40773B /* TemplateDetailScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplateDetailScreen.swift; sourceTree = "<group>"; };
 		6FF51B97D51CA1D8FE2D9298 /* Providers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Providers.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 			children = (
 				9D13C856A7F208007308536C /* AppBackground.swift */,
 				BC9EDFC90336DC29D47CEA84 /* AppTheme.swift */,
+				5B42B321129CB6F16BC0DA39 /* StudioStyle.swift */,
 			);
 			path = Theme;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				B5BF46658858A2D33C3EB2ED /* SettingsScreen.swift in Sources */,
 				85B208DA38D88B3EAD3BFDED /* State.swift in Sources */,
 				6C9C9CA7EF42B415F42D76A6 /* StopArrangerScreen.swift in Sources */,
+				71B71289A858EC2F7C9110A0 /* StudioStyle.swift in Sources */,
 				8157767B724E6B3E47CE2622 /* TemplateDetailScreen.swift in Sources */,
 				2A0FBD029B95ECF2D2F2E6AE /* TemplatesGalleryScreen.swift in Sources */,
 			);

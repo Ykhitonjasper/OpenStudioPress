@@ -39,8 +39,9 @@ enum StudioTab: String, Codable, Hashable, CaseIterable {
 }
 
 enum StudioRoute: Hashable {
-    case blockShelf(CreateBrief)
-    case arranger(CreateBrief)
+    /// Push destinations carry only stable ids — brief payload lives on `StudioAppStore`.
+    case blockShelf(String)
+    case arranger(String)
     case layoutControls(String)
     case preview(String)
     case healthPanel(String)

@@ -56,7 +56,7 @@ struct BlockShelfScreen: View {
 
     private var arrangerButton: some View {
         Button {
-            store.route = .arranger(store.brief)
+            store.route = .arranger(store.brief.id)
         } label: {
             HStack {
                 Text("Arrange \(store.draftBlocks.count) Blocks")

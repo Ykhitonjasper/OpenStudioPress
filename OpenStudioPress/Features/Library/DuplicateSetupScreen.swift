@@ -134,7 +134,7 @@ struct DuplicateSetupScreen: View {
         store.brief = brief
         store.draftBlocks = viewModel.makeDraftBlocks()
         store.composition = nil
-        store.route = .arranger(brief)
+        store.route = .arranger(brief.id)
         dismiss()
     }
 

@@ -25,7 +25,7 @@ struct StopArrangerScreen: View {
                         Text("Choose editorial blocks to shape the visitor route for \(store.brief.title).")
                     } actions: {
                         Button("Choose Blocks") {
-                            store.route = .blockShelf(store.brief)
+                            store.route = .blockShelf(store.brief.id)
                         }
                         .buttonStyle(.borderedProminent)
                         .tint(AppTheme.accent)

@@ -47,7 +47,7 @@ struct LiveBookletPreviewScreen: View {
                     Text("Add editorial blocks to create a booklet preview.")
                 } actions: {
                     Button("Choose Blocks") {
-                        store.route = .blockShelf(store.brief)
+                        store.route = .blockShelf(store.brief.id)
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(AppTheme.accent)

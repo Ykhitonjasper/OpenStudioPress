@@ -160,7 +160,7 @@ struct TemplateDetailScreen: View {
             store.draftBlocks = draft.blocks
             store.composition = nil
             store.selectedTab = .create
-            store.route = .arranger(draft.brief)
+            store.route = .arranger(draft.brief.id)
             viewModel.useSequence += 1
         } label: {
             Label("Use in Create", systemImage: "square.and.pencil")

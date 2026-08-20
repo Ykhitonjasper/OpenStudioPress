@@ -192,7 +192,7 @@ private final class CreateBriefModel {
             foldRhythm: .paired
         )
         store.brief = brief
-        store.route = .blockShelf(brief)
+        store.route = .blockShelf(brief.id)
     }
 }
 

@@ -66,7 +66,9 @@ struct RootView: View {
         .onChange(of: presentedSheet) { _, sheet in
             guard sheet == nil, let pendingPush else { return }
             self.pendingPush = nil
-            navigationPath.append(pendingPush)
+            if navigationPath.last != pendingPush {
+                navigationPath.append(pendingPush)
+            }
         }
     }
 
@@ -80,8 +82,16 @@ struct RootView: View {
     private func present(_ route: StudioRoute) {
         switch route {
         case .layoutControls, .healthPanel, .duplicateSetup, .export:
+            if presentedSheet == route {
+                store.route = nil
+                return
+            }
             presentedSheet = route
         case .blockShelf, .arranger, .preview, .artifactDetail, .templateDetail:
+            if navigationPath.last == route || pendingPush == route {
+                store.route = nil
+                return
+            }
             if presentedSheet == nil {
                 navigationPath.append(route)
             } else {
@@ -130,10 +140,10 @@ struct RootView: View {
 extension StudioRoute: Identifiable {
     var id: String {
         switch self {
-        case let .blockShelf(brief):
-            "blockShelf-\(brief.id)"
-        case let .arranger(brief):
-            "arranger-\(brief.id)"
+        case let .blockShelf(identifier):
+            "blockShelf-\(identifier)"
+        case let .arranger(identifier):
+            "arranger-\(identifier)"
         case let .layoutControls(identifier):
             "layoutControls-\(identifier)"
         case let .preview(identifier):

@@ -1,11 +1,8 @@
 import XCTest
 
-/// Chassis-agnostic 2.1 smoke: walks the app the way a reviewer does and captures the
-/// screenshots on the way. Navigation is discovered through the accessibility tree, so
-/// Same XCUITest for every app — do not hand-tune it per target.
-///
-/// Run it through scripts/run-smoke.py: that uninstalls first, so the app always starts
-/// at onboarding with a virgin store.
+/// Walkthrough smoke test: walks the app the way a reviewer does and captures the
+/// screenshots on the way. Navigation is discovered through the accessibility tree.
+/// Same test for every app — do not hand-tune it per target.
 final class SmokeUITests: XCTestCase {
 
     private static let onboardingCTAs = [
@@ -26,10 +23,10 @@ final class SmokeUITests: XCTestCase {
         let tabBar = app.tabBars.firstMatch
         XCTAssertTrue(
             tabBar.waitForExistence(timeout: 10),
-            "No tab bar after onboarding — the app never reaches its main surface (2.1)"
+            "No tab bar after onboarding — the app never reaches its main surface"
         )
         let tabCount = tabBar.buttons.count
-        XCTAssertGreaterThanOrEqual(tabCount, 3, "Need ≥3 tabs on iOS 17 (4.2), found \(tabCount)")
+        XCTAssertGreaterThanOrEqual(tabCount, 3, "Need ≥3 tabs on iOS 17, found \(tabCount)")
 
         // Pass 1 captures the submission screenshots, pass 2 proves the loop survives a repeat.
         sweepTabs(capture: true)
@@ -52,12 +49,15 @@ final class SmokeUITests: XCTestCase {
         capture(named: "launch")
         for _ in 0..<8 {
             guard let cta = onboardingButton() else { break }
-            capture(named: "onboarding")
             cta.tap()
-            settle(0.5)
+            settle(0.6)
+            // Capture after the page advances so 01-launch and 02-onboarding stay unique.
+            if !app.tabBars.firstMatch.exists {
+                capture(named: "onboarding")
+            }
         }
         if !app.tabBars.firstMatch.waitForExistence(timeout: 5) {
-            XCTFail("Onboarding never hands off to the main surface — dead end at first launch (2.1)")
+            XCTFail("Onboarding never hands off to the main surface — dead end at first launch")
         }
     }
 
@@ -76,7 +76,7 @@ final class SmokeUITests: XCTestCase {
             let density = app.staticTexts.count + app.cells.count + app.images.count
             XCTAssertGreaterThanOrEqual(
                 density, 3,
-                "Tab \(label) renders almost nothing — empty or dead tab (4.2)"
+                "Tab \(label) renders almost nothing — empty or dead tab"
             )
             if shouldCapture {
                 capture(named: label)
@@ -93,10 +93,10 @@ final class SmokeUITests: XCTestCase {
             let found = app.buttons.matching(match).firstMatch.exists
                 || app.links.matching(match).firstMatch.exists
                 || app.staticTexts.matching(match).firstMatch.exists
-            XCTAssertTrue(found, "Settings has no \(title) entry — required by 2.1 / 5.1.1")
+            XCTAssertTrue(found, "Settings has no \(title) entry — required for compliance")
         }
         // No capture here: the tab sweep already shot this surface, and a duplicate
-        // would be rejected by the 2.3.3 gate.
+        // would be rejected downstream.
     }
 
     private func checkDeleteAllData() {
@@ -104,7 +104,7 @@ final class SmokeUITests: XCTestCase {
         let delete = app.buttons.matching(
             NSPredicate(format: "label CONTAINS[c] %@", "Delete All")
         ).firstMatch
-        XCTAssertTrue(delete.waitForExistence(timeout: 5), "Settings offers no Delete All Data (2.1)")
+        XCTAssertTrue(delete.waitForExistence(timeout: 5), "Settings offers no Delete All Data")
         delete.tap()
         confirmDestructiveAction()
 
@@ -119,7 +119,7 @@ final class SmokeUITests: XCTestCase {
             capture(named: "delete-failed")
             let visible = app.buttons.allElementsBoundByIndex.prefix(12).map(\.label)
             XCTFail(
-                "Delete All Data did not return to onboarding — the completion flag survived the wipe (2.1). "
+                "Delete All Data did not return to onboarding — the completion flag survived the wipe. "
                     + "Visible buttons: \(visible)"
             )
         }
