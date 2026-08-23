@@ -184,7 +184,7 @@ struct ArtifactDetailScreen: View {
     private func actionBar(for artifact: Artifact) -> some View {
         HStack(spacing: 12) {
             Button {
-                store.route = .duplicateSetup(artifact.id)
+                store.navigate(.duplicateSetup(artifact.id))
             } label: {
                 Label("Duplicate", systemImage: "plus.square.on.square")
                     .frame(maxWidth: .infinity)
@@ -194,7 +194,7 @@ struct ArtifactDetailScreen: View {
             .accessibilityHint("Opens a prefilled duplicate for \(artifact.title).")
 
             Button {
-                store.route = .export(artifact.id)
+                store.navigate(.export(artifact.id))
             } label: {
                 Label("Export", systemImage: "square.and.arrow.up")
                     .frame(maxWidth: .infinity)
@@ -236,7 +236,7 @@ struct ArtifactDetailScreen: View {
     }
 
     private func returnToLibrary() {
-        store.route = nil
+        store.clearNavigation()
         store.selectedTab = .library
     }
 

@@ -136,7 +136,7 @@ struct TemplatesGalleryScreen: View {
 
     private func templateCard(for template: Template) -> some View {
         Button {
-            store.route = .templateDetail(template.id)
+            store.navigate(.templateDetail(template.id))
         } label: {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
@@ -183,7 +183,7 @@ struct TemplatesGalleryScreen: View {
             return
         }
 
-        store.route = .templateDetail(template.id)
+        store.navigate(.templateDetail(template.id))
     }
 
     @MainActor

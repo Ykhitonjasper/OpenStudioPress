@@ -134,12 +134,12 @@ struct DuplicateSetupScreen: View {
         store.brief = brief
         store.draftBlocks = viewModel.makeDraftBlocks()
         store.composition = nil
-        store.route = .arranger(brief.id)
+        store.openCreateArranger(briefID: brief.id)
         dismiss()
     }
 
     private func cancel() {
-        store.route = nil
+        store.sheetRoute = nil
         dismiss()
     }
 

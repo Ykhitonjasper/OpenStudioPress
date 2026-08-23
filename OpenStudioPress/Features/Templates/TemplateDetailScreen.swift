@@ -159,8 +159,7 @@ struct TemplateDetailScreen: View {
             store.brief = draft.brief
             store.draftBlocks = draft.blocks
             store.composition = nil
-            store.selectedTab = .create
-            store.route = .arranger(draft.brief.id)
+            store.openCreateArranger(briefID: draft.brief.id)
             viewModel.useSequence += 1
         } label: {
             Label("Use in Create", systemImage: "square.and.pencil")
@@ -181,8 +180,8 @@ struct TemplateDetailScreen: View {
             Text("This starter could not be found. Browse the template collection to choose another one.")
         } actions: {
             Button("Browse Templates") {
+                store.clearNavigation()
                 store.selectedTab = .templates
-                store.route = nil
             }
             .buttonStyle(.borderedProminent)
             .tint(AppTheme.accent)

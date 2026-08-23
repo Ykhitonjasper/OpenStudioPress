@@ -47,7 +47,7 @@ struct LiveBookletPreviewScreen: View {
                     Text("Add editorial blocks to create a booklet preview.")
                 } actions: {
                     Button("Choose Blocks") {
-                        store.route = .blockShelf(store.brief.id)
+                        store.navigate(.blockShelf(store.brief.id))
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(AppTheme.accent)
@@ -216,7 +216,7 @@ struct LiveBookletPreviewScreen: View {
                     .foregroundStyle(AppTheme.textSecondary)
             } else {
                 Button {
-                    store.route = .healthPanel(composition.id)
+                    store.navigate(.healthPanel(composition.id))
                 } label: {
                     Label(
                         "\(composition.flags.count) structural \(composition.flags.count == 1 ? "flag" : "flags")",
@@ -246,19 +246,19 @@ struct LiveBookletPreviewScreen: View {
 
             Menu {
                 Button {
-                    store.route = .duplicateSetup(composition.id)
+                    store.navigate(.duplicateSetup(composition.id))
                 } label: {
                     Label("Duplicate", systemImage: "plus.square.on.square")
                 }
 
                 Button {
-                    store.route = .healthPanel(composition.id)
+                    store.navigate(.healthPanel(composition.id))
                 } label: {
                     Label("Health", systemImage: "heart.text.square")
                 }
 
                 Button {
-                    store.route = .export(composition.id)
+                    store.navigate(.export(composition.id))
                 } label: {
                     Label("Export", systemImage: "square.and.arrow.up")
                 }

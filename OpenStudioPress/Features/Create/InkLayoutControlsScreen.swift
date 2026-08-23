@@ -68,7 +68,7 @@ struct InkLayoutControlsScreen: View {
                 ToolbarItem(placement: .bottomBar) {
                     Button {
                         synchronizeComposition()
-                        store.route = .preview(store.brief.id)
+                        store.navigate(.preview(store.brief.id))
                     } label: {
                         Label("Preview Booklet", systemImage: "book.pages")
                     }

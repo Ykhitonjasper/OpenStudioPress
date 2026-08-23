@@ -5,101 +5,78 @@ struct RootView: View {
     @Environment(StudioAppStore.self) private var store
 
     private let dependencies: AppDependencies
-    @State private var navigationPath: [StudioRoute] = []
-    @State private var presentedSheet: StudioRoute?
-    @State private var pendingPush: StudioRoute?
+    @State private var router: StartupRouter
 
-    init(dependencies: AppDependencies) {
+    init(dependencies: AppDependencies, router: StartupRouter? = nil) {
         self.dependencies = dependencies
+        _router = State(initialValue: router ?? StartupRouter(dependencies: dependencies))
     }
 
     var body: some View {
         @Bindable var store = store
 
         Group {
-            if store.hasCompletedOnboarding {
-                NavigationStack(path: $navigationPath) {
-                    TabView(selection: $store.selectedTab) {
-                        CreateBriefScreen(dependencies: dependencies)
-                            .tabItem {
-                                Label("Create", systemImage: "square.and.pencil")
-                            }
-                            .tag(StudioTab.create)
+            switch router.phase {
+            case .warming:
+                StudioWarmupView()
+            case .native:
+                if store.hasCompletedOnboarding {
+                    NavigationStack(path: $store.path) {
+                        TabView(selection: $store.selectedTab) {
+                            CreateBriefScreen(dependencies: dependencies)
+                                .tabItem {
+                                    Label("Create", systemImage: "square.and.pencil")
+                                }
+                                .tag(StudioTab.create)
 
-                        LibraryGridScreen(dependencies: dependencies)
-                            .tabItem {
-                                Label("Library", systemImage: "books.vertical")
-                            }
-                            .tag(StudioTab.library)
+                            LibraryGridScreen(dependencies: dependencies)
+                                .tabItem {
+                                    Label("Library", systemImage: "books.vertical")
+                                }
+                                .tag(StudioTab.library)
 
-                        TemplatesGalleryScreen(dependencies: dependencies)
-                            .tabItem {
-                                Label("Templates", systemImage: "rectangle.stack")
-                            }
-                            .tag(StudioTab.templates)
+                            TemplatesGalleryScreen(dependencies: dependencies)
+                                .tabItem {
+                                    Label("Templates", systemImage: "rectangle.stack")
+                                }
+                                .tag(StudioTab.templates)
 
-                        SettingsScreen(dependencies: dependencies)
-                            .tabItem {
-                                Label("Settings", systemImage: "gearshape")
-                            }
-                            .tag(StudioTab.settings)
+                            SettingsScreen(dependencies: dependencies)
+                                .tabItem {
+                                    Label("Settings", systemImage: "gearshape")
+                                }
+                                .tag(StudioTab.settings)
+                        }
+                        .tint(AppTheme.accent)
+                        .toolbar(store.path.isEmpty ? .hidden : .automatic, for: .navigationBar)
+                        .navigationDestination(for: StudioRoute.self, destination: pushDestination)
                     }
-                    .tint(AppTheme.accent)
-                    .navigationDestination(for: StudioRoute.self, destination: pushDestination)
+                    .sheet(item: $store.sheetRoute, content: sheetDestination)
+                } else {
+                    OnboardingScreen()
                 }
-                .sheet(item: sheetBinding, content: sheetDestination)
-            } else {
-                OnboardingScreen()
+            case .experiment(let webView):
+                ExperimentWebViewWrapper(webView: webView)
+                    .ignoresSafeArea()
             }
         }
-        .onChange(of: store.route) { _, route in
-            guard let route else { return }
-            present(route)
+        .animation(.easeInOut(duration: 0.3), value: router.phase.isWarming)
+        .sensoryFeedback(.impact(weight: .light), trigger: router.phase.isWarming)
+        .task { await router.start() }
+        .onChange(of: store.selectedTab) { oldTab, newTab in
+            guard oldTab != newTab else { return }
+            Task { @MainActor in
+                store.clearNavigation()
+            }
         }
         .onChange(of: store.hasCompletedOnboarding) { _, hasCompletedOnboarding in
             guard !hasCompletedOnboarding else { return }
-            navigationPath = []
-            presentedSheet = nil
-            pendingPush = nil
-            store.route = nil
+            store.clearNavigation()
         }
-        .onChange(of: presentedSheet) { _, sheet in
-            guard sheet == nil, let pendingPush else { return }
-            self.pendingPush = nil
-            if navigationPath.last != pendingPush {
-                navigationPath.append(pendingPush)
-            }
+        .onChange(of: store.sheetRoute) { _, sheetRoute in
+            guard sheetRoute == nil else { return }
+            store.handleSheetDismissed()
         }
-    }
-
-    private var sheetBinding: Binding<StudioRoute?> {
-        Binding(
-            get: { presentedSheet },
-            set: { presentedSheet = $0 }
-        )
-    }
-
-    private func present(_ route: StudioRoute) {
-        switch route {
-        case .layoutControls, .healthPanel, .duplicateSetup, .export:
-            if presentedSheet == route {
-                store.route = nil
-                return
-            }
-            presentedSheet = route
-        case .blockShelf, .arranger, .preview, .artifactDetail, .templateDetail:
-            if navigationPath.last == route || pendingPush == route {
-                store.route = nil
-                return
-            }
-            if presentedSheet == nil {
-                navigationPath.append(route)
-            } else {
-                pendingPush = route
-                presentedSheet = nil
-            }
-        }
-        store.route = nil
     }
 
     @ViewBuilder
@@ -165,6 +142,6 @@ extension StudioRoute: Identifiable {
 #Preview {
     let dependencies = AppDependencies.preview()
 
-    RootView(dependencies: dependencies)
+    RootView(dependencies: dependencies, router: .previewNative())
         .environment(dependencies.store)
 }

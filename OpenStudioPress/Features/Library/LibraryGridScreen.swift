@@ -69,7 +69,7 @@ struct LibraryGridScreen: View {
 
     private func artifactCard(for artifact: Artifact) -> some View {
         Button {
-            store.route = .artifactDetail(artifact.id)
+            store.navigate(.artifactDetail(artifact.id))
         } label: {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
@@ -122,7 +122,7 @@ struct LibraryGridScreen: View {
         )
         store.draftBlocks = []
         store.composition = nil
-        store.route = nil
+        store.clearNavigation()
         store.selectedTab = .create
     }
 

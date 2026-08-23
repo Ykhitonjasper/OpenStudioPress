@@ -12,28 +12,26 @@ struct CreateBriefScreen: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 28) {
-                    StudioSectionHeader(
-                        eyebrow: "Atelier",
-                        title: "Create a booklet",
-                        subtitle: "Start with a blank structure or adapt one of the studio templates."
-                    )
+        ScrollView {
+            VStack(alignment: .leading, spacing: 28) {
+                StudioSectionHeader(
+                    eyebrow: "Atelier",
+                    title: "Create a booklet",
+                    subtitle: "Start with a blank structure or adapt one of the studio templates."
+                )
 
-                    startingPath
-                    bookletDetails
-                    templateChoices
-                    continueButton
-                }
-                .padding(20)
-                .padding(.bottom, 28)
+                startingPath
+                bookletDetails
+                templateChoices
+                continueButton
             }
-            .background(AppBackground())
-            .navigationTitle(AppTheme.displayName)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbarBackground(.hidden, for: .navigationBar)
+            .padding(20)
+            .padding(.bottom, 28)
         }
+        .background(AppBackground())
+        .navigationTitle(AppTheme.displayName)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(.hidden, for: .navigationBar)
     }
 
     private var startingPath: some View {
@@ -192,10 +190,12 @@ private final class CreateBriefModel {
             foldRhythm: .paired
         )
         store.brief = brief
-        store.route = .blockShelf(brief.id)
+        store.navigate(.blockShelf(brief.id))
     }
 }
 
 #Preview {
-    CreateBriefScreen(dependencies: .preview())
+    NavigationStack {
+        CreateBriefScreen(dependencies: .preview())
+    }
 }

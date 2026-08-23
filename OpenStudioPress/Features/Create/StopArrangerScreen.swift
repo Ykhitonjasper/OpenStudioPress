@@ -14,66 +14,64 @@ struct StopArrangerScreen: View {
     var body: some View {
         @Bindable var store = store
 
-        NavigationStack {
-            ZStack {
-                AppBackground()
+        ZStack {
+            AppBackground()
 
-                if blocks.isEmpty {
-                    ContentUnavailableView {
-                        Label("Start Your Outline", systemImage: "rectangle.stack.badge.plus")
-                    } description: {
-                        Text("Choose editorial blocks to shape the visitor route for \(store.brief.title).")
-                    } actions: {
-                        Button("Choose Blocks") {
-                            store.route = .blockShelf(store.brief.id)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(AppTheme.accent)
-                        .accessibilityHint("Returns to the block shelf to add editorial blocks.")
-                    }
-                    .foregroundStyle(AppTheme.textPrimary)
-                    .padding()
-                } else {
-                    List {
-                        Section {
-                            compositionSummary
-                        }
-                        .listRowBackground(AppTheme.bgElevated)
-
-                        Section {
-                            ForEach(blocks) { block in
-                                blockEditor(block)
-                            }
-                            .onMove(perform: moveBlocks)
-                            .onDelete(perform: removeBlocks)
-                        } header: {
-                            Text("Editorial Order")
-                        } footer: {
-                            Text("Drag blocks to change the booklet sequence. Every change updates the composition.")
-                                .foregroundStyle(AppTheme.textSecondary)
-                        }
-                    }
-                    .scrollContentBackground(.hidden)
-                }
-            }
-            .navigationTitle(AppTheme.displayName)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    EditButton()
-                        .accessibilityLabel("Reorder blocks")
-                }
-
-                ToolbarItem(placement: .bottomBar) {
-                    Button {
-                        openPreview()
-                    } label: {
-                        Label("Preview Booklet", systemImage: "book.pages")
+            if blocks.isEmpty {
+                ContentUnavailableView {
+                    Label("Start Your Outline", systemImage: "rectangle.stack.badge.plus")
+                } description: {
+                    Text("Choose editorial blocks to shape the visitor route for \(store.brief.title).")
+                } actions: {
+                    Button("Choose Blocks") {
+                        store.navigate(.blockShelf(store.brief.id))
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(AppTheme.accent)
-                    .disabled(blocks.isEmpty)
-                    .accessibilityHint("Recomputes the booklet and opens its preview.")
+                    .accessibilityHint("Returns to the block shelf to add editorial blocks.")
                 }
+                .foregroundStyle(AppTheme.textPrimary)
+                .padding()
+            } else {
+                List {
+                    Section {
+                        compositionSummary
+                    }
+                    .listRowBackground(AppTheme.bgElevated)
+
+                    Section {
+                        ForEach(blocks) { block in
+                            blockEditor(block)
+                        }
+                        .onMove(perform: moveBlocks)
+                        .onDelete(perform: removeBlocks)
+                    } header: {
+                        Text("Editorial Order")
+                    } footer: {
+                        Text("Drag blocks to change the booklet sequence. Every change updates the composition.")
+                            .foregroundStyle(AppTheme.textSecondary)
+                    }
+                }
+                .scrollContentBackground(.hidden)
+            }
+        }
+        .navigationTitle(AppTheme.displayName)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                EditButton()
+                    .accessibilityLabel("Reorder blocks")
+            }
+
+            ToolbarItem(placement: .bottomBar) {
+                Button {
+                    openPreview()
+                } label: {
+                    Label("Preview Booklet", systemImage: "book.pages")
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(AppTheme.accent)
+                .disabled(blocks.isEmpty)
+                .accessibilityHint("Recomputes the booklet and opens its preview.")
             }
         }
         .onAppear(perform: loadDraft)
@@ -256,7 +254,7 @@ struct StopArrangerScreen: View {
 
     private func openPreview() {
         synchronizeComposition()
-        store.route = .preview(store.brief.id)
+        store.navigate(.preview(store.brief.id))
     }
 }
 
@@ -272,6 +270,8 @@ struct StopArrangerScreen: View {
     )
     dependencies.store.draftBlocks = Array(StudioSeedData.blocks().prefix(5))
 
-    return StopArrangerScreen(compositionEngine: dependencies.compositionEngine)
-        .environment(dependencies.store)
+    return NavigationStack {
+        StopArrangerScreen(compositionEngine: dependencies.compositionEngine)
+    }
+    .environment(dependencies.store)
 }
