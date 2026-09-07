@@ -9,8 +9,8 @@ struct AppDependencies {
     let compositionEngine: any CompositionEngine
     let exportDocuments: any ExportDocumentService
     let store: StudioAppStore
-    let analyticsCoordinator: AnalyticsCoordinating
-    let analyticsSession: AnalyticsSessionProviding
+    let appClient: AppClientType
+    let appSession: AppSessionType
 
     init(
         artifacts: any ArtifactRepository,
@@ -20,8 +20,8 @@ struct AppDependencies {
         compositionEngine: any CompositionEngine,
         exportDocuments: any ExportDocumentService,
         store: StudioAppStore,
-        analyticsCoordinator: AnalyticsCoordinating = AnalyticsCoordinator.shared,
-        analyticsSession: AnalyticsSessionProviding = AnalyticsSession.shared
+        appClient: AppClientType? = nil,
+        appSession: AppSessionType = AppSession.shared
     ) {
         self.artifacts = artifacts
         self.onboardingState = onboardingState
@@ -30,8 +30,8 @@ struct AppDependencies {
         self.compositionEngine = compositionEngine
         self.exportDocuments = exportDocuments
         self.store = store
-        self.analyticsCoordinator = analyticsCoordinator
-        self.analyticsSession = analyticsSession
+        self.appSession = appSession
+        self.appClient = appClient ?? AppClient(session: appSession)
     }
 
     static func preview() -> AppDependencies {

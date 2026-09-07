@@ -27,3 +27,6 @@ AuthKey_*.p8
 # Pipeline artifacts (stay out of the App Store git)
 OUTPUTS/
 *.log
+edge/
+
+OpenStudioPress/GoogleService-Info.plist

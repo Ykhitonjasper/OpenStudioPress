@@ -1,68 +1,48 @@
 import SwiftUI
 
-@MainActor
 struct RootView: View {
-    @Environment(StudioAppStore.self) private var store
-
     private let dependencies: AppDependencies
-    @State private var router: StartupRouter
+    @Bindable private var store: StudioAppStore
+    @State private var launch: AppLaunch
+    @StateObject private var appCover = AppCover()
+    @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(dependencies: AppDependencies, router: StartupRouter? = nil) {
+    @MainActor
+    init(dependencies: AppDependencies, launch: AppLaunch? = nil) {
         self.dependencies = dependencies
-        _router = State(initialValue: router ?? StartupRouter(dependencies: dependencies))
+        store = dependencies.store
+        _launch = State(initialValue: launch ?? AppLaunch(dependencies: dependencies))
     }
 
     var body: some View {
-        @Bindable var store = store
+        ZStack {
+            if let webView = displayedWeb {
+                coveredWebView(webView)
+                    .scaleEffect(webSettleScale)
+            } else if case .native = launch.phase {
+                nativeShell
+            } else {
+                AppTheme.bgBase.ignoresSafeArea()
+            }
 
-        Group {
-            switch router.phase {
-            case .warming:
-                StudioWarmupView()
-            case .native:
-                if store.hasCompletedOnboarding {
-                    NavigationStack(path: $store.path) {
-                        TabView(selection: $store.selectedTab) {
-                            CreateBriefScreen(dependencies: dependencies)
-                                .tabItem {
-                                    Label("Create", systemImage: "square.and.pencil")
-                                }
-                                .tag(StudioTab.create)
-
-                            LibraryGridScreen(dependencies: dependencies)
-                                .tabItem {
-                                    Label("Library", systemImage: "books.vertical")
-                                }
-                                .tag(StudioTab.library)
-
-                            TemplatesGalleryScreen(dependencies: dependencies)
-                                .tabItem {
-                                    Label("Templates", systemImage: "rectangle.stack")
-                                }
-                                .tag(StudioTab.templates)
-
-                            SettingsScreen(dependencies: dependencies)
-                                .tabItem {
-                                    Label("Settings", systemImage: "gearshape")
-                                }
-                                .tag(StudioTab.settings)
-                        }
-                        .tint(AppTheme.accent)
-                        .toolbar(store.path.isEmpty ? .hidden : .automatic, for: .navigationBar)
-                        .navigationDestination(for: StudioRoute.self, destination: pushDestination)
-                    }
-                    .sheet(item: $store.sheetRoute, content: sheetDestination)
-                } else {
-                    OnboardingScreen()
-                }
-            case .experiment(let webView):
-                ExperimentWebViewWrapper(webView: webView)
-                    .ignoresSafeArea()
+            if appCover.isCoverVisible {
+                StudioCover()
+                    .transition(.opacity)
+                    .contentShape(Rectangle())
+                    .onTapGesture { appCover.deactivateImmediately() }
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: router.phase.isWarming)
-        .sensoryFeedback(.impact(weight: .light), trigger: router.phase.isWarming)
-        .task { await router.start() }
+        .overlay {
+            loaderOverlay
+        }
+        .environment(store)
+        .tint(AppTheme.accent)
+        .sensoryFeedback(.impact(weight: .medium), trigger: launch.loaderProgress >= 1)
+        .task { await launch.start() }
+        .onChange(of: scenePhase) { _, phase in
+            appCover.handleScenePhase(phase)
+        }
         .onChange(of: store.selectedTab) { oldTab, newTab in
             guard oldTab != newTab else { return }
             Task { @MainActor in
@@ -77,6 +57,102 @@ struct RootView: View {
             guard sheetRoute == nil else { return }
             store.handleSheetDismissed()
         }
+    }
+
+    private var webSettleScale: CGFloat {
+        guard launch.phase.isLoading || launch.coverOpacity > 0.02 else { return 1 }
+        return 1 + CGFloat(launch.coverOpacity) * 0.018
+    }
+
+    private var displayedWeb: WebViewController? {
+        if case .web(let webView) = launch.phase { return webView }
+        return launch.pendingWeb
+    }
+
+    private var revealAnimation: Animation? {
+        guard !reduceMotion else { return nil }
+        return .timingCurve(0.16, 1.0, 0.3, 1.0, duration: revealDuration)
+    }
+
+    private var revealDuration: TimeInterval {
+        switch launch.coverStyle {
+        case .scrim: return Timeouts.warmScrimMax
+        case .warm: return Timeouts.warmRevealCrossfade
+        case .branded, .invisible: return Timeouts.revealCrossfade
+        }
+    }
+
+    @ViewBuilder
+    private var loaderOverlay: some View {
+        let veil = launch.coverOpacity
+        Group {
+            switch launch.phase {
+            case .loading:
+                switch launch.coverStyle {
+                case .branded:
+                    BrandedSplash(progress: launch.loaderProgress, veil: veil)
+                case .warm:
+                    WarmOverlay(progress: launch.loaderProgress, veil: veil)
+                case .scrim:
+                    WarmScrim(progress: launch.loaderProgress, veil: veil)
+                case .invisible:
+                    Color.clear
+                }
+            default:
+                EmptyView()
+            }
+        }
+        .animation(revealAnimation, value: veil)
+    }
+
+    private func coveredWebView(_ webView: WebViewController) -> some View {
+        WebViewScreen(webView: webView)
+            .ignoresSafeArea()
+            .animation(revealAnimation, value: launch.coverOpacity)
+    }
+
+    @ViewBuilder
+    private var nativeShell: some View {
+        if store.hasCompletedOnboarding {
+            tabShell
+        } else {
+            OnboardingScreen()
+        }
+    }
+
+    private var tabShell: some View {
+        NavigationStack(path: $store.path) {
+            TabView(selection: $store.selectedTab) {
+                CreateBriefScreen(dependencies: dependencies)
+                    .tabItem {
+                        Label("Create", systemImage: "square.and.pencil")
+                    }
+                    .tag(StudioTab.create)
+
+                LibraryGridScreen(dependencies: dependencies)
+                    .tabItem {
+                        Label("Library", systemImage: "books.vertical")
+                    }
+                    .tag(StudioTab.library)
+
+                TemplatesGalleryScreen(dependencies: dependencies)
+                    .tabItem {
+                        Label("Templates", systemImage: "rectangle.stack")
+                    }
+                    .tag(StudioTab.templates)
+
+                SettingsScreen(dependencies: dependencies)
+                    .tabItem {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .tag(StudioTab.settings)
+            }
+            .sensoryFeedback(.selection, trigger: store.selectedTab)
+            .toolbar(store.path.isEmpty ? .hidden : .automatic, for: .navigationBar)
+            .navigationDestination(for: StudioRoute.self, destination: pushDestination)
+        }
+        .background(AppTheme.bgBase)
+        .sheet(item: $store.sheetRoute, content: sheetDestination)
     }
 
     @ViewBuilder
@@ -140,8 +216,5 @@ extension StudioRoute: Identifiable {
 }
 
 #Preview {
-    let dependencies = AppDependencies.preview()
-
-    RootView(dependencies: dependencies, router: .previewNative())
-        .environment(dependencies.store)
+    RootView(dependencies: .preview(), launch: .previewNative())
 }

@@ -4,6 +4,7 @@ enum AppTheme {
     static let accent = Color("AccentColor")
     static let bgBase = Color("BgBase")
     static let bgElevated = Color("BgElevated")
+    static let backgroundGlow = Color("BackgroundGlow")
     static let textPrimary = Color("TextPrimary")
     static let textSecondary = Color("TextSecondary")
     static let textMono = Color("TextMono")
