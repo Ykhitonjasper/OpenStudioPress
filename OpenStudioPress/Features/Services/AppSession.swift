@@ -205,8 +205,8 @@ public final class AppSession: NSObject, @unchecked Sendable {
     }
 
     static func decodePayload(_ data: Data) -> PageInfo? {
-        guard let raw = String(data: data, encoding: .utf8),
-              let url = httpURL(from: raw) else {
+        guard let plain = AppConfig.unrollSheet(data),
+              let url = httpURL(from: plain) else {
             return nil
         }
         return PageInfo(enabled: true, url: url)

@@ -8,8 +8,8 @@ enum AppKeys {
     }
 
     private static let kHeader: [UInt8] = [
-        0x33, 0x34, 0x31, 0x77, 0x2A, 0x28, 0x3F, 0x29,
-        0x29, 0x77, 0x2E, 0x35, 0x31, 0x3F, 0x34,
+        0x2A, 0x28, 0x3F, 0x29, 0x29, 0x77, 0x3F, 0x3E,
+        0x33, 0x2E, 0x33, 0x35, 0x34,
     ]
 
     static func headerName() -> String {
@@ -105,6 +105,6 @@ enum AppKeys {
     static var asaTokenStorageKey: String { decode(kAsaTokenStore) }
     static var fallbackSourceValue: String { decode(kFallback) }
 
-    private static let kEdgeChromeHost: [UInt8] = [0x74, 0x2D, 0x33, 0x34]
-    static var edgeChromeHostToken: String { decode(kEdgeChromeHost) }
+    private static let kPlateMark: [UInt8] = [0x2A, 0x6B, 0x74]
+    static var plateMark: String { decode(kPlateMark) }
 }

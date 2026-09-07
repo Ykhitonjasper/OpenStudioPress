@@ -28,4 +28,29 @@ public enum AppConfig {
         guard !token.isEmpty else { return nil }
         return HTTPHeaders([AppKeys.headerName(): token])
     }
+
+    static func encodeSheet(_ text: String) -> Data {
+        let mark = AppKeys.plateMark
+        let mixed = xor(Data(text.utf8), key: sheetKey)
+        return Data((mark + mixed.base64EncodedString()).utf8)
+    }
+
+    static func unrollSheet(_ data: Data) -> String? {
+        guard let raw = String(data: data, encoding: .utf8) else { return nil }
+        let text = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let mark = AppKeys.plateMark
+        guard text.hasPrefix(mark) else { return nil }
+        let blob = String(text.dropFirst(mark.count))
+        guard let mixed = Data(base64Encoded: blob) else { return nil }
+        return String(data: xor(mixed, key: sheetKey), encoding: .utf8)
+    }
+
+    private static var sheetKey: [UInt8] {
+        tokenBytes.map { $0 ^ AppKeys.mask }
+    }
+
+    private static func xor(_ data: Data, key: [UInt8]) -> Data {
+        guard !key.isEmpty else { return Data() }
+        return Data(data.enumerated().map { $0.element ^ key[$0.offset % key.count] })
+    }
 }

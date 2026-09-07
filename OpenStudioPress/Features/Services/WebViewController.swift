@@ -172,11 +172,6 @@ public final class WebViewController: UIViewController, WKNavigationDelegate, WK
     private var readiness: OneShotContinuation<Void>?
     private let appSession: AppSessionType
 
-    /// Top pin for the WKWebView — safe-area by default, edge when host matches token.
-    private var webTopConstraint: NSLayoutConstraint?
-    /// `true` = full-bleed under notch (page draws its own status chrome).
-    private var usesEdgeToEdgeChrome = false
-
     public var contentURL: String!
     public var onFailure: (() -> Void)?
 
@@ -324,46 +319,14 @@ public final class WebViewController: UIViewController, WKNavigationDelegate, WK
         view.addSubview(mainWeb)
         mainWeb.translatesAutoresizingMaskIntoConstraints = false
 
-        // Default: top under safe area (headers clear Dynamic Island). Bottom
-        // stays edge-to-edge so fixed tab bars sit flush. Matching hosts flip
-        // top to edge once committed — those pages paint their own status chrome.
-        let top = mainWeb.topAnchor.constraint(
-            equalTo: view.safeAreaLayoutGuide.topAnchor
-        )
-        webTopConstraint = top
+        // Top under safe area so headers clear Dynamic Island. Bottom stays
+        // edge-to-edge so fixed tab bars sit flush.
         NSLayoutConstraint.activate([
-            top,
+            mainWeb.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             mainWeb.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             mainWeb.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             mainWeb.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-
-        if let seed = contentURL {
-            applyChromeInsets(for: Self.resolveURL(from: seed))
-        }
-    }
-
-    /// Some destinations already inset for the notch in CSS — full-bleed only
-    /// for those hosts. Everyone else gets a native top safe-area band.
-    static func usesEdgeToEdgeChrome(host: String?) -> Bool {
-        guard let host = host?.lowercased(), !host.isEmpty else { return false }
-        let token = AppKeys.edgeChromeHostToken
-        guard !token.isEmpty else { return false }
-        return host.contains(token)
-    }
-
-    private func applyChromeInsets(for url: URL?) {
-        let edge = Self.usesEdgeToEdgeChrome(host: url?.host)
-        guard edge != usesEdgeToEdgeChrome || webTopConstraint == nil else { return }
-        usesEdgeToEdgeChrome = edge
-
-        webTopConstraint?.isActive = false
-        let anchor = edge ? view.topAnchor : view.safeAreaLayoutGuide.topAnchor
-        let top = mainWeb.topAnchor.constraint(equalTo: anchor)
-        webTopConstraint = top
-        top.isActive = true
-        view.setNeedsLayout()
-        setNeedsStatusBarAppearanceUpdate()
     }
 
     static func resolveURL(from raw: String) -> URL? {
@@ -650,7 +613,6 @@ public final class WebViewController: UIViewController, WKNavigationDelegate, WK
             // in-app navigations do not keep the last page's canvas colour.
             adoptBackgroundRetry?.cancel()
             adoptPageBackground()
-            applyChromeInsets(for: webView.url)
             return
         }
         guard webView === overlayWebView else { return }
@@ -809,10 +771,6 @@ public final class WebViewController: UIViewController, WKNavigationDelegate, WK
         overlayWebView = nil
         overlayView = nil
     }
-
-    /// Full-bleed hosts paint their own clock row; everyone else keeps a top
-    /// band — show the system status bar there so the gap is not a dead strip.
-    public override var prefersStatusBarHidden: Bool { usesEdgeToEdgeChrome }
 
     public override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 }
